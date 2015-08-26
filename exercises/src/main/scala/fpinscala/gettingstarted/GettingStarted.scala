@@ -19,9 +19,9 @@ object MyModule {
   // A definition of factorial, using a local, tail recursive function
   def factorial(n: Int): Int = {
     @annotation.tailrec
-    def go(n: Int, acc: Int): Int =
-      if (n <= 0) acc
-      else go(n-1, n*acc)
+    def go(num: Int, acc: Int): Int =
+      if (num <= 0) acc
+      else go(num - 1, num * acc)
 
     go(n, 1)
   }
@@ -35,8 +35,15 @@ object MyModule {
   }
 
   // Exercise 1: Write a function to compute the nth fibonacci number
+  def fib(n: Int): Int = {
+    @annotation.tailrec
+    def go(a: Int, b: Int, m: Int): Int = {
+      if (m > 0) go(b, a + b, m - 1)
+      else a
+    }
 
-  def fib(n: Int): Int = ???
+    go(0, 1, n)
+  }
 
   // This definition and `formatAbs` are very similar..
   private def formatFactorial(n: Int) = {
@@ -53,7 +60,6 @@ object MyModule {
 }
 
 object FormatAbsAndFactorial {
-
   import MyModule._
 
   // Now we can use our general `formatResult` function
@@ -65,7 +71,6 @@ object FormatAbsAndFactorial {
 }
 
 object TestFib {
-
   import MyModule._
 
   // test implementation of `fib`
@@ -90,6 +95,21 @@ object AnonymousFunctions {
     println(formatResult("increment3", 7, x => x + 1))
     println(formatResult("increment4", 7, _ + 1))
     println(formatResult("increment5", 7, x => { val r = x + 1; r }))
+  }
+}
+
+object TestExercises {
+  import PolymorphicFunctions._
+
+  def main(args: Array[String]): Unit = {
+    val nums = Array(1, 2, 3, 4, 5, 6, 30, 45)
+    println(s"Testing with [${nums.mkString(",")}], which is sorted")
+    println(s"Result with <: ${isSorted(nums, (a: Int, b: Int) => a < b)}")
+
+    val unsortedNums = Array(1, 2, 3, 43, 4, 6, 30, 45)
+    println(s"Testing with [${unsortedNums.mkString(",")}], which is NOT sorted")
+    println(s"Result with <: ${isSorted(unsortedNums, (a: Int, b: Int) => a < b)}")
+    println(s"Result with >: ${isSorted(unsortedNums, (a: Int, b: Int) => a > b)}")
   }
 }
 
@@ -140,7 +160,8 @@ object PolymorphicFunctions {
 
   // Exercise 2: Implement a polymorphic function to check whether
   // an `Array[A]` is sorted
-  def isSorted[A](as: Array[A], gt: (A,A) => Boolean): Boolean = ???
+  def isSorted[A](as: Array[A], gt: (A,A) => Boolean): Boolean =
+    as.sliding(2).forall(item => gt(item(0), item(1)))
 
   // Polymorphic functions are often so constrained by their type
   // that they only have one implementation! Here's an example:
@@ -152,14 +173,14 @@ object PolymorphicFunctions {
 
   // Note that `=>` associates to the right, so we could
   // write the return type as `A => B => C`
-  def curry[A,B,C](f: (A, B) => C): A => (B => C) =
-    ???
+  def curry[A, B, C](f: (A, B) => C): A => (B => C) =
+    (a: A) => f(a, _)
 
   // NB: The `Function2` trait has a `curried` method already
 
   // Exercise 4: Implement `uncurry`
   def uncurry[A,B,C](f: A => B => C): (A, B) => C =
-    ???
+    (a: A, b: B) => f(a)(b)
 
   /*
   NB: There is a method on the `Function` object in the standard library,
@@ -174,5 +195,5 @@ object PolymorphicFunctions {
   // Exercise 5: Implement `compose`
 
   def compose[A,B,C](f: B => C, g: A => B): A => C =
-    ???
+    (a: A) => f(g(a))
 }
